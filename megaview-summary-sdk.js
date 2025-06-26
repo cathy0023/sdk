@@ -857,7 +857,7 @@
 
     async loadSummaryData() {
       const conversationId = this.getAttribute('conversation-id');
-      const apiUrl = this.getAttribute('api-url') || 'http://localhost:3000/api';
+      const apiUrl = this.getAttribute('api-url') || 'http://localhost:5298/api';
       const token = this.getAttribute('token');
       
       this.isLoading = true;
