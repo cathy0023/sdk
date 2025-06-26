@@ -6,7 +6,10 @@ const PORT = process.env.PORT || 3000;
 // 启用CORS
 app.use(
   cors({
-    origin: "*", // 允许所有来源访问，生产环境中应该限制为特定域名
+    origin: [
+      "https://www.megaview.com",
+      "https://jirui.test.mgvai.cn"
+    ], // 允许访问的域名列表
     methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
