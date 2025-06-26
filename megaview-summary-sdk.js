@@ -200,6 +200,7 @@
     .event-button {
       margin-right: 4px;
       margin-bottom: 4px;
+      background-color: #4461ec;
     }
     
     /* 未提及问题样式 */

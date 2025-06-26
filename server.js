@@ -8,7 +8,8 @@ app.use(
   cors({
     origin: [
       "https://www.megaview.com",
-      "https://jirui.test.mgvai.cn"
+      "https://jirui.test.mgvai.cn",
+      "http://localhost:3000"
     ], // 允许访问的域名列表
     methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -36,11 +37,11 @@ app.get("/api/summary", (req, res) => {
       data: [
         {
           copilot_instruction_set_id: 798,
-          copilot_instruction_set_name: "会话质检_1748416231074",
+          copilot_instruction_set_name: "会话纪要_sdk测试",
           content: [
             {
-              question_name: "销售是否挖需",
-              answer_description: "销售是否主动挖掘了客户需求",
+              question_name: "sdk测试",
+              answer_description: "这是一个sdk测试",
               answers: [
                 {
                   llm_answer: "否",
