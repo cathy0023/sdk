@@ -911,7 +911,7 @@
       };
       
       if (token) {
-        headers['Authorization'] = `Bearer ${token}`;http://localhost:5298
+        headers['Authorization'] = `Bearer ${token}`;
       }
       
       // 使用新的API端点
