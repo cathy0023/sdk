@@ -13,6 +13,14 @@ app.use(cors({
 // 中间件
 app.use(express.json());
 
+// 静态文件服务
+app.use(express.static(__dirname));
+
+// 设置默认首页
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/index.html');
+});
+
 // 路由
 app.get('/api/summary', (req, res) => {
   // 返回一个简单的摘要数据
