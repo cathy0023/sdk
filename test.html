@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MegaView Summary SDK 测试</title>
+  <link rel="stylesheet" href="megaview-summary-sdk.css">
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -84,45 +85,65 @@
     <div class="content" id="summary-container"></div>
   </div>
 
-  <script src="megaview-summary-sdk.js"></script>
-  <script src="index.js"></script>
   <script>
-    document.getElementById('render-btn').addEventListener('click', function() {
-      const conversationId = document.getElementById('conversation-id').value;
-      const apiUrl = document.getElementById('api-url').value;
-      
-      const container = document.getElementById('summary-container');
-      
-      // 渲染会话纪要
-      const widget = MegaviewSummary.render(container, {
-        conversationId: conversationId,
-        apiUrl: apiUrl
-      });
-      
-      // 添加事件监听
-      MegaviewSummary.on(widget, 'summary-loaded', function(e) {
-        console.log('会话纪要加载完成:', e.detail);
-      });
-      
-      MegaviewSummary.on(widget, 'original-text-click', function(e) {
-        console.log('点击查看原文:', e.detail);
-        alert('点击了查看原文，顺序号: ' + e.detail.order);
-      });
-    });
+    // 首先创建全局MegaviewSummary对象
+    window.MegaviewSummary = window.MegaviewSummary || {};
+  </script>
+  <script src="megaview-summary-sdk.js"></script>
+  <script type="module">
+    // 导入SDK入口文件
+    import MegaviewSummary from './index.js';
     
-    document.getElementById('modal-btn').addEventListener('click', function() {
-      const conversationId = document.getElementById('conversation-id').value;
-      const apiUrl = document.getElementById('api-url').value;
-      
-      // 弹窗显示会话纪要
-      MegaviewSummary.showModal({
-        title: '会话纪要',
-        conversationId: conversationId,
-        apiUrl: apiUrl,
-        onClose: function() {
-          console.log('弹窗已关闭');
-        }
-      });
+    // 确保全局对象可用
+    window.MegaviewSummary = MegaviewSummary;
+  </script>
+  <script>
+    // 等待DOM和模块加载完成
+    document.addEventListener('DOMContentLoaded', function() {
+      // 确保MegaviewSummary已加载
+      setTimeout(function() {
+        // 渲染按钮事件
+        document.getElementById('render-btn').addEventListener('click', function() {
+          const conversationId = document.getElementById('conversation-id').value;
+          const apiUrl = document.getElementById('api-url').value;
+          
+          const container = document.getElementById('summary-container');
+          
+          // 渲染会话纪要
+          const widget = window.MegaviewSummary.render(container, {
+            conversationId: conversationId,
+            apiUrl: apiUrl
+          });
+          
+          // 添加事件监听
+          window.MegaviewSummary.on(widget, 'summary-loaded', function(e) {
+            console.log('会话纪要加载完成:', e.detail);
+          });
+          
+          window.MegaviewSummary.on(widget, 'original-text-click', function(e) {
+            console.log('点击查看原文:', e.detail);
+            alert('点击了查看原文，顺序号: ' + e.detail.order);
+          });
+        });
+        
+        // 弹窗按钮事件
+        document.getElementById('modal-btn').addEventListener('click', function() {
+          const conversationId = document.getElementById('conversation-id').value;
+          const apiUrl = document.getElementById('api-url').value;
+          
+          console.log('弹窗显示，MegaviewSummary:', window.MegaviewSummary);
+          
+          // 弹窗显示会话纪要
+          window.MegaviewSummary.showModal({
+            title: '会话纪要',
+            conversationId: conversationId,
+            apiUrl: apiUrl,
+            onClose: function() {
+              console.log('弹窗已关闭');
+            }
+          });
+        });
+      }, 100); // 短暂延迟确保模块加载完成
     });
   </script>
 </body>

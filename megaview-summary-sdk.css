@@ -5,8 +5,8 @@
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
+  width: 100%;
+  height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
@@ -19,9 +19,9 @@
   border-radius: 8px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   width: 80%;
-  max-width: 900px;
+  max-width: 1000px;
   height: 80%;
-  max-height: 700px;
+  max-height: 800px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -31,42 +31,38 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
+  padding: 16px;
   border-bottom: 1px solid #ebeef5;
 }
 
 .megaview-summary-modal-title {
   font-size: 18px;
-  font-weight: 600;
+  font-weight: bold;
   color: #303133;
 }
 
 .megaview-summary-modal-close {
-  font-size: 20px;
+  font-size: 24px;
   color: #909399;
   cursor: pointer;
-  width: 24px;
-  height: 24px;
-  line-height: 24px;
-  text-align: center;
 }
 
 .megaview-summary-modal-close:hover {
-  color: #606266;
+  color: #303133;
 }
 
 .megaview-summary-modal-body {
   flex: 1;
-  overflow: hidden;
-  padding: 0;
+  overflow: auto;
+  padding: 16px;
 }
 
 /* 动画效果 */
 .megaview-fade-in {
-  animation: megaview-fade-in 0.3s ease;
+  animation: fadeIn 0.3s ease-in-out;
 }
 
-@keyframes megaview-fade-in {
+@keyframes fadeIn {
   from {
     opacity: 0;
   }

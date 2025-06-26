@@ -1,18 +1,18 @@
 // MegaView Summary SDK 入口文件
 
-// 导入SDK样式
-import './megaview-summary-sdk.css';
-// 导入SDK核心
-import './megaview-summary-sdk.js';
+// 确保全局对象存在
+window.MegaviewSummary = window.MegaviewSummary || {};
 
-// 可选：导入纯JavaScript版本（不使用Web Components）
-// import './megaview-summary-sdk-pure.js';
+// 在浏览器环境中，这些import语句可能会导致问题
+// 我们改为在HTML中直接引入这些文件
 
 // 导出SDK API
 export default window.MegaviewSummary;
 
 // 提供弹窗展示功能
 window.MegaviewSummary.showModal = function(options = {}) {
+  console.log('showModal called with options:', options);
+  
   // 创建模态框容器
   const modal = document.createElement('div');
   modal.className = 'megaview-summary-modal megaview-fade-in';
