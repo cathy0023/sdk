@@ -856,7 +856,7 @@
 
     async loadSummaryData() {
       const conversationId = this.getAttribute('conversation-id');
-      const apiUrl = this.getAttribute('api-url') || 'http://localhost:9528';
+      const apiUrl = this.getAttribute('api-url') || 'http://localhost:3000/api';
       const token = this.getAttribute('token');
       
       this.isLoading = true;
@@ -875,16 +875,11 @@
         
         this.isLoading = false;
         // 处理API返回的数据结构
-        if (res.results) {
+        if (res.code === 200) {
           this.summaryData = res.results;
-        } else if (res.data) {
-          this.summaryData = {
-            data: res.data,
-            last_update_time: res.last_update_time || new Date().toISOString()
-          };
-        } else {
-          this.summaryData = res;
         }
+
+        console.log('summaryData', this.summaryData);
         
         // 触发加载完成事件
         const event = new CustomEvent('summary-loaded', {
