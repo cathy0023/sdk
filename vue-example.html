@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MegaView Summary SDK - Vue 示例</title>
+  <!-- 引入Vue -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
+  <!-- 引入SDK样式 -->
+  <link rel="stylesheet" href="megaview-summary-sdk.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f7fa;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+      padding: 20px;
+    }
+    .header {
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #ebeef5;
+    }
+    .header h1 {
+      margin: 0;
+      color: #303133;
+    }
+    .content {
+      height: 600px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #606266;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #4461ec;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    button:hover {
+      background-color: #3a53cc;
+    }
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #dcdfe6;
+      margin-bottom: 20px;
+    }
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+    }
+    .tab.active {
+      border-bottom-color: #4461ec;
+      color: #4461ec;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="container">
+      <div class="header">
+        <h1>MegaView Summary SDK - Vue 示例</h1>
+      </div>
+      
+      <div class="tabs">
+        <div 
+          class="tab" 
+          :class="{ active: activeTab === 'form' }" 
+          @click="activeTab = 'form'"
+        >
+          表单方式
+        </div>
+        <div 
+          class="tab" 
+          :class="{ active: activeTab === 'component' }" 
+          @click="activeTab = 'component'"
+        >
+          组件方式
+        </div>
+      </div>
+      
+      <div class="tab-content" :class="{ active: activeTab === 'form' }">
+        <div class="form-group">
+          <label for="conversation-id">会话ID</label>
+          <input type="text" id="conversation-id" v-model="conversationId">
+        </div>
+        
+        <div class="form-group">
+          <label for="api-url">API地址</label>
+          <input type="text" id="api-url" v-model="apiUrl">
+        </div>
+        
+        <div class="form-group">
+          <button @click="renderSummary">渲染会话纪要</button>
+          <button @click="showModal">弹窗显示</button>
+          <button @click="checkSDK">检查SDK状态</button>
+        </div>
+        
+        <div class="content" ref="summaryContainer"></div>
+      </div>
+      
+      <div class="tab-content" :class="{ active: activeTab === 'component' }">
+        <div class="form-group">
+          <label for="component-conversation-id">会话ID</label>
+          <input type="text" id="component-conversation-id" v-model="componentConversationId">
+        </div>
+        
+        <div class="form-group">
+          <button @click="activeComponent = !activeComponent">
+            {{ activeComponent ? '隐藏组件' : '显示组件' }}
+          </button>
+        </div>
+        
+        <div class="content" v-if="activeComponent">
+          <megaview-summary 
+            :conversation-id="componentConversationId" 
+            :api-url="apiUrl">
+          </megaview-summary>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 引入SDK核心 -->
+  <script src="megaview-summary-sdk.js"></script>
+  <!-- 引入Vue包装器 -->
+  <script src="megaview-summary-vue.js"></script>
+  
+  <script>
+    // 确保SDK加载完成
+    document.addEventListener('DOMContentLoaded', function() {
+      // 创建Vue应用
+      new Vue({
+        el: '#app',
+        data: {
+          activeTab: 'form',
+          conversationId: '63332',
+          componentConversationId: '63332',
+          apiUrl: 'https://sdk-bice.vercel.app/api',
+          activeComponent: false,
+          sdkWidget: null
+        },
+        mounted() {
+          // 注册Vue插件
+          if (window.MegaviewSummaryPlugin) {
+            Vue.use(window.MegaviewSummaryPlugin, {
+              apiUrl: this.apiUrl
+            });
+            console.log('MegaView SDK Plugin registered');
+          } else {
+            console.error('MegaView SDK Plugin not found');
+          }
+        },
+        methods: {
+          renderSummary() {
+            if (window.MegaviewSummary && typeof window.MegaviewSummary.render === 'function') {
+              console.log('Rendering summary with:', {
+                conversationId: this.conversationId,
+                apiUrl: this.apiUrl
+              });
+              
+              this.sdkWidget = window.MegaviewSummary.render(this.$refs.summaryContainer, {
+                conversationId: this.conversationId,
+                apiUrl: this.apiUrl
+              });
+            } else {
+              console.error('MegaView SDK: render method not found');
+              this.$refs.summaryContainer.innerHTML = '<div style="padding: 20px; color: #f56c6c;">SDK 渲染方法未找到，请确保正确加载了SDK核心文件</div>';
+            }
+          },
+          showModal() {
+            if (window.MegaviewSummary && typeof window.MegaviewSummary.showModal === 'function') {
+              console.log('Showing modal with:', {
+                conversationId: this.conversationId,
+                apiUrl: this.apiUrl
+              });
+              
+              window.MegaviewSummary.showModal({
+                title: '会话纪要',
+                conversationId: this.conversationId,
+                apiUrl: this.apiUrl,
+                onClose: () => {
+                  console.log('弹窗已关闭');
+                }
+              });
+            } else {
+              console.error('MegaView SDK: showModal method not found');
+              alert('SDK showModal 方法未找到，请确保正确加载了SDK文件');
+            }
+          },
+          checkSDK() {
+            console.log('MegaviewSummary object:', window.MegaviewSummary);
+            console.log('MegaviewSummaryPlugin object:', window.MegaviewSummaryPlugin);
+            
+            if (window.MegaviewSummary) {
+              const methods = Object.keys(window.MegaviewSummary).filter(key => typeof window.MegaviewSummary[key] === 'function');
+              alert(`SDK 已加载，可用方法: ${methods.join(', ')}`);
+            } else {
+              alert('SDK 未正确加载');
+            }
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html> 

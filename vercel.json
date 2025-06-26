@@ -4,7 +4,8 @@
     { "src": "server.js", "use": "@vercel/node" },
     { "src": "*.js", "use": "@vercel/static" },
     { "src": "*.css", "use": "@vercel/static" },
-    { "src": "*.html", "use": "@vercel/static" }
+    { "src": "*.html", "use": "@vercel/static" },
+    { "src": "*.md", "use": "@vercel/static" }
   ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/server.js" },
