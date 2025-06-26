@@ -857,7 +857,7 @@
 
     async loadSummaryData() {
       const conversationId = this.getAttribute('conversation-id');
-      const apiUrl = this.getAttribute('api-url') || 'http://localhost:5298/api';
+      const apiUrl = this.getAttribute('api-url') || 'https://sdk-bice.vercel.app/api';
       const token = this.getAttribute('token');
       
       this.isLoading = true;
@@ -911,7 +911,7 @@
       };
       
       if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+        headers['Authorization'] = `Bearer ${token}`;http://localhost:5298
       }
       
       // 使用新的API端点
