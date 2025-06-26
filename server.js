@@ -7,9 +7,10 @@ const PORT = process.env.PORT || 3000;
 app.use(
   cors({
     origin: [
+      "https://sdk-bice.vercel.app",
       "https://www.megaview.com",
       "https://jirui.test.mgvai.cn",
-      "http://localhost:3000"
+      "http://localhost:3000",
     ], // 允许访问的域名列表
     methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
