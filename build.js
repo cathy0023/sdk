@@ -11,6 +11,7 @@ if (!fs.existsSync(distDir)) {
 // 合并SDK文件
 const sdkJs = fs.readFileSync(path.resolve(__dirname, './megaview-summary-sdk.js'), 'utf8');
 const sdkCss = fs.readFileSync(path.resolve(__dirname, './megaview-summary-sdk.css'), 'utf8');
+const purifyJs = fs.readFileSync(path.resolve(__dirname, './purify.min.js'), 'utf8');
 
 // 创建UMD版本
 const umdContent = `
@@ -25,6 +26,9 @@ const umdContent = `
   const style = document.createElement('style');
   style.textContent = \`${sdkCss}\`;
   document.head.appendChild(style);
+  
+  // 注入DOMPurify
+  ${purifyJs}
   
   ${sdkJs}
   
@@ -42,6 +46,9 @@ const esContent = `
 const style = document.createElement('style');
 style.textContent = \`${sdkCss}\`;
 document.head.appendChild(style);
+
+// 注入DOMPurify
+${purifyJs}
 
 ${sdkJs}
 

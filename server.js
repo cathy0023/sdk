@@ -88,11 +88,6 @@ app.get("/api/summary", (req, res) => {
   });
 });
 
-// 健康检查端点
-app.get("/health", (req, res) => {
-  res.status(200).send("OK");
-});
-
 // 启动服务器
 app.listen(PORT, () => {
   console.log(`服务器运行在 http://localhost:${PORT}`);

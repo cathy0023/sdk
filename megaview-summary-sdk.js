@@ -2,6 +2,43 @@
 // 版本: 1.0.0
 
 (function() {
+  // 动态加载DOMPurify（如果尚未加载）
+  if (!window.DOMPurify) {
+    try {
+      // 尝试使用ES模块导入
+      import('dompurify').then(module => {
+        window.DOMPurify = module.default;
+        console.log('DOMPurify已动态加载');
+      }).catch(err => {
+        console.debug('无法动态加载DOMPurify模块，将使用基本HTML转义', err);
+      });
+    } catch (e) {
+      console.debug('环境不支持动态导入，将使用基本HTML转义');
+    }
+  }
+  
+  // 安全HTML处理函数
+  function safeHTML(unsafeHTML, config = {}) {
+    if (window.DOMPurify) {
+      // 默认配置，允许SVG相关标签和属性
+      const defaultConfig = {
+        ADD_TAGS: ['svg', 'path', 'animatetransform'],
+        ADD_ATTR: ['viewBox', 'xmlns', 'width', 'height', 'd', 'fill', 'attributeName', 'type', 'from', 'to', 'dur', 'repeatCount']
+      };
+      
+      // 合并配置
+      const mergedConfig = {...defaultConfig, ...config};
+      
+      return window.DOMPurify.sanitize(unsafeHTML, mergedConfig);
+    }
+    return String(unsafeHTML)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
   // 图标定义
   const ICONS = {
     'icon-refresh-right': '<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em"><path d="M512 170.666667c-188.544 0-341.333333 152.789333-341.333333 341.333333 0 78.506667 26.538667 150.741333 71.082666 208.298667l-59.733333 59.733333 60.373333 60.373333 59.733334-59.733333a340.48 340.48 0 0 0 209.877333 71.082667c188.544 0 341.333333-152.789333 341.333333-341.333334S700.544 170.666667 512 170.666667z m0 597.333333c-141.376 0-256-114.624-256-256s114.624-256 256-256 256 114.624 256 256-114.624 256-256 256z" fill="currentColor"></path><path d="M657.664 392.874667l-60.330667-60.330667-85.333333 85.333333-85.333333-85.333333-60.330667 60.330667 85.333333 85.333333-85.333333 85.333333 60.330667 60.330667 85.333333-85.333333 85.333333 85.333333 60.330667-60.330667-85.333333-85.333333z" fill="currentColor"></path></svg>',
@@ -375,6 +412,7 @@
       this.eventTrackerData = [];
       this.eventTrackerTitle = '';
       this.participantsInfo = [];
+      this.dataLoaded = false; // 添加标志位，避免重复加载
     }
 
     static get observedAttributes() {
@@ -384,6 +422,8 @@
     attributeChangedCallback(name, oldValue, newValue) {
       if (oldValue !== newValue) {
         if (name === 'conversation-id' && newValue) {
+          // 重置数据加载状态，允许重新加载
+          this.dataLoaded = false;
           this.loadSummaryData();
         }
       }
@@ -391,9 +431,7 @@
 
     connectedCallback() {
       this.render();
-      if (this.getAttribute('conversation-id')) {
-        this.loadSummaryData();
-      }
+      // 不在这里调用loadSummaryData，让attributeChangedCallback来处理
     }
 
     render() {
@@ -457,7 +495,7 @@
         const refreshButton = document.createElement('button');
         refreshButton.className = 'megaview-button megaview-button-text';
         refreshButton.title = '再次运行指令';
-        refreshButton.innerHTML = `<i class="icon">${ICONS['icon-refresh-right']}</i>`;
+        refreshButton.innerHTML = `<i class="icon">${safeIcon('icon-refresh-right')}</i>`;
         refreshButton.disabled = this.summaryData?.isRunning || false;
         refreshButton.addEventListener('click', () => this.reRunningInstruct());
         header.appendChild(refreshButton);
@@ -467,7 +505,7 @@
       const expandButton = document.createElement('button');
       expandButton.className = 'megaview-button megaview-button-text';
       expandButton.title = this.isSummaryExpanded ? '全部收起' : '全部展开';
-      expandButton.innerHTML = `<i class="icon">${this.isSummaryExpanded ? ICONS['icon-content-collapse'] : ICONS['icon-content-expansion']}</i>`;
+      expandButton.innerHTML = `<i class="icon">${safeIcon(this.isSummaryExpanded ? 'icon-content-collapse' : 'icon-content-expansion')}</i>`;
       expandButton.addEventListener('click', () => this.toggleSummaryResultExpand());
       header.appendChild(expandButton);
       
@@ -481,10 +519,10 @@
         // 渲染加载状态
         const loading = document.createElement('div');
         loading.className = 'run-loading';
-        loading.innerHTML = `
+        loading.innerHTML = safeHTML(`
           <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MCA1MCI+PHBhdGggZD0iTTI1IDVhMjAgMjAgMCAxIDAgMCA0MCAxIDEgMCAwIDAgMC0yIDIwIDIwIDAgMCAxIDAtMzYgMSAxIDAgMCAwIDAtMnoiIGZpbGw9IiM0MDllZmYiPjxhbmltYXRlVHJhbnNmb3JtIGF0dHJpYnV0ZU5hbWU9InRyYW5zZm9ybSIgdHlwZT0icm90YXRlIiBmcm9tPSIwIDI1IDI1IiB0bz0iMzYwIDI1IDI1IiBkdXI9IjAuOHMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+PC9wYXRoPjwvc3ZnPg==" />
           <p>指令运行中，请稍候几分钟再查看结果</p>
-        `;
+        `);
         content.appendChild(loading);
       } else if (!this.summaryData?.data?.length) {
         // 渲染无数据状态
@@ -495,7 +533,7 @@
         if (!this.checkReRunningPermission()) {
           noDataText.textContent = '暂无内容';
         } else {
-          noDataText.innerHTML = '暂无内容，您是否想 <span class="can-click-text">现在运行指令</span>';
+          noDataText.innerHTML = safeHTML('暂无内容，您是否想 <span class="can-click-text">现在运行指令</span>');
           noDataText.querySelector('.can-click-text').addEventListener('click', () => this.reRunningInstruct());
         }
         
@@ -666,7 +704,7 @@
         
         const icon = document.createElement('i');
         icon.className = 'icon';
-        icon.innerHTML = ICONS['icon-arrow-down-small'];
+        icon.innerHTML = safeIcon('icon-arrow-down-small');
         expandIcon.appendChild(icon);
         
         titleRight.appendChild(expandIcon);
@@ -701,7 +739,7 @@
               originalTextDiv.style.borderRadius = '4px';
               
               const contentP = document.createElement('p');
-              contentP.innerHTML = originalText.content;
+              contentP.innerHTML = safeHTML(originalText.content);
               originalTextDiv.appendChild(contentP);
               
               // 添加原文链接
@@ -743,7 +781,7 @@
           reasoningTitle.style.marginBottom = '4px';
           
           const reasoningContent = document.createElement('div');
-          reasoningContent.innerHTML = answer.reasoning_process;
+          reasoningContent.innerHTML = safeHTML(answer.reasoning_process);
           
           reasoningDiv.appendChild(reasoningTitle);
           reasoningDiv.appendChild(reasoningContent);
@@ -760,7 +798,7 @@
       // 创建标题
       const titleDiv = document.createElement('div');
       titleDiv.className = 'not-mentioned-question__title';
-      titleDiv.innerHTML = `<div>${notMentionedList.length}条未提及</div>`;
+      titleDiv.innerHTML = safeHTML(`<div>${notMentionedList.length}条未提及</div>`);
       
       // 添加展开/收起图标
       const iconDiv = document.createElement('div');
@@ -777,7 +815,7 @@
       
       const icon = document.createElement('i');
       icon.className = 'icon';
-      icon.innerHTML = ICONS['icon-arrow-down-small'];
+      icon.innerHTML = safeIcon('icon-arrow-down-small');
       iconDiv.appendChild(icon);
       
       titleDiv.appendChild(iconDiv);
@@ -800,9 +838,9 @@
         itemDiv.className = 'not-mentioned-question__content-item';
         
         if (notMentionedList.length > 1) {
-          itemDiv.innerHTML = `<span>${index + 1}.</span> ${question.question_name}：${this.notMentionedQuestionAnswer(question)}`;
+          itemDiv.innerHTML = safeHTML(`<span>${index + 1}.</span> ${question.question_name}：${this.notMentionedQuestionAnswer(question)}`);
         } else {
-          itemDiv.innerHTML = `${question.question_name}：${this.notMentionedQuestionAnswer(question)}`;
+          itemDiv.innerHTML = safeHTML(`${question.question_name}：${this.notMentionedQuestionAnswer(question)}`);
         }
         
         contentDiv.appendChild(itemDiv);
@@ -856,12 +894,19 @@
     }
 
     async loadSummaryData() {
+      // 检查是否已经加载过数据，避免重复加载
+      if (this.dataLoaded) {
+        console.log('数据已加载，跳过重复加载');
+        return;
+      }
+      
       const conversationId = this.getAttribute('conversation-id');
       const apiUrl = this.getAttribute('api-url') || 'https://sdk-bice.vercel.app/api';
       const token = this.getAttribute('token');
       
       this.isLoading = true;
       this.summaryData = { isRunning: true };
+      this.dataLoaded = true; // 设置标志位
       this.render();
       
       try {
@@ -985,6 +1030,8 @@
       const apiUrl = this.getAttribute('api-url') || 'https://api.megaview.com';
       const token = this.getAttribute('token');
       
+      // 重置数据加载状态，允许重新加载
+      this.dataLoaded = false;
       this.summaryData = { isRunning: true };
       this.render();
       
@@ -1118,7 +1165,7 @@
       
       const backIcon = document.createElement('i');
       backIcon.className = 'icon';
-      backIcon.innerHTML = ICONS['icon-arrow-left'];
+      backIcon.innerHTML = safeIcon('icon-arrow-left');
       backIcon.addEventListener('click', () => this.clearEventTracker());
       header.appendChild(backIcon);
       
@@ -1133,12 +1180,12 @@
       eventList.className = 'key-event-detail-list';
       
       this.eventTrackerData.forEach(event => {
-        const eventItem = document.createElement('div');
-        eventItem.className = 'key-event-item';
-        eventItem.innerHTML = `
-          <div class="key-event-item__title">${event.title}</div>
-          <div class="key-event-item__content">${event.content}</div>
-        `;
+              const eventItem = document.createElement('div');
+      eventItem.className = 'key-event-item';
+      eventItem.innerHTML = safeHTML(`
+        <div class="key-event-item__title">${event.title}</div>
+        <div class="key-event-item__content">${event.content}</div>
+      `);
         
         // 添加原文点击事件
         if (event.order) {
@@ -1168,6 +1215,21 @@
   }
 
   // 暴露全局API
+  // 专门用于处理SVG图标的函数
+  function safeIcon(iconName) {
+    const iconSvg = ICONS[iconName] || '';
+    if (window.DOMPurify) {
+      // SVG图标需要特殊配置，确保所有SVG相关标签和属性都被保留
+      const svgConfig = {
+        USE_PROFILES: { svg: true, svgFilters: true },
+        ADD_TAGS: ['svg', 'path', 'animatetransform'],
+        ADD_ATTR: ['viewBox', 'xmlns', 'width', 'height', 'd', 'fill', 'attributeName', 'type', 'from', 'to', 'dur', 'repeatCount']
+      };
+      return window.DOMPurify.sanitize(iconSvg, svgConfig);
+    }
+    return iconSvg; // 图标是预定义的，风险较低
+  }
+
   window.MegaviewSummary = {
     // 渲染摘要组件到指定容器
     render: function(container, options = {}) {
@@ -1213,6 +1275,12 @@
       }
       
       element.addEventListener(eventName, callback);
-    }
+    },
+    
+    // 安全HTML处理函数
+    safeHTML: safeHTML,
+    
+    // 安全图标处理函数
+    safeIcon: safeIcon
   };
 })(); 
